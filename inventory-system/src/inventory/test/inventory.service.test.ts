@@ -1,22 +1,49 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryService } from '../inventory.service';
+import { Inventory } from '../dto/inventory.dto';
+import { InventoryRepository } from '../repository/inventory.repository';
+
+jest.mock('../repository/inventory.repository');
 
 describe('InventoryService', () => {
-  let service: InventoryService;
+  let sut: InventoryService; // System Under Test
+  let inventoryRepository: InventoryRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [InventoryService],
+      providers: [InventoryService, InventoryRepository],
     }).compile();
 
-    service = module.get<InventoryService>(InventoryService);
+    sut = module.get<InventoryService>(InventoryService);
+    inventoryRepository = module.get<InventoryRepository>(InventoryRepository);
   });
 
   /** 재고 조회 */
   describe('FindByItemId', () => {
-    it('itemId를 갖는 entity를 찾지 못하면, null을 반환', async () => {});
+    it('itemId를 갖는 entity를 찾지 못하면, null을 반환', async () => {
+      // given
+      const nonExistingItemId = '2';
 
-    it('itemId를 갖는 entity를 찾았다면, inventory를 반환', async () => {});
+      // when
+      const result: Inventory = sut.findByItemId(nonExistingItemId);
+
+      // then
+      expect(result).toBeNull();
+    });
+
+    it('itemId를 갖는 entity를 찾았다면, inventory를 반환', async () => {
+      // given
+      const existingItemId: string = '2';
+      const quantity: number = 10;
+
+      // when
+      const result: Inventory = sut.findByItemId(existingItemId);
+
+      // then
+      expect(result).not.toBeNull();
+      expect(existingItemId).toBe(result.getItemId());
+      expect(quantity).toBe(result.getStock());
+    });
   });
 
   /** 재고 감소 */
