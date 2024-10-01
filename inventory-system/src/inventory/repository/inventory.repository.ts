@@ -1,16 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Inventory } from '../dto/inventory.dto';
 import { Repository } from 'typeorm';
+import { Inventory } from '../entity/inventory.entity';
+import { IInventoryRepository } from '../interface/inventory-repository.interface';
 
 @Injectable()
-export class InventoryRepository {
+export class InventoryRepository implements IInventoryRepository {
   constructor(
     @InjectRepository(Inventory)
     private readonly inventoryRepository: Repository<Inventory>,
   ) {}
 
-  addInventory(itemId: string, stock: number) {
-    return this.inventoryRepository.save({ itemId, stock });
+  async findByItemId(itemId: string) {
+    return await this.inventoryRepository.findOne({ where: { itemId } });
+  }
+
+  async addInventory(itemId: string, stock: number) {
+    return await this.inventoryRepository.save({ itemId, stock });
   }
 }

@@ -4,14 +4,28 @@ import { InventoryService } from '../inventory.service';
 import { InventoryRepository } from '../repository/inventory.repository';
 
 describe('InventoryController', () => {
-  let controller: InventoryController;
+  let inventoryController: InventoryController;
+  let inventoryService: InventoryService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [InventoryController],
-      providers: [InventoryService, InventoryRepository],
+      providers: [
+        InventoryService,
+        {
+          provide: InventoryRepository,
+          useValue: {
+            addInventory: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
-    controller = module.get<InventoryController>(InventoryController);
+    inventoryController = module.get<InventoryController>(InventoryController);
+    inventoryService = module.get<InventoryService>(InventoryService);
+  });
+
+  it('should be defined', () => {
+    expect(inventoryController).toBeDefined();
   });
 });
