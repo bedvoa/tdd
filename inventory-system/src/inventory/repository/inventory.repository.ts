@@ -18,4 +18,8 @@ export class InventoryRepository implements IInventoryRepository {
   async addInventory(itemId: string, stock: number) {
     return await this.inventoryRepository.save({ itemId, stock });
   }
+
+  async decreaseByItemId(itemId: string, stock: number): Promise<any> {
+    return await this.inventoryRepository.save({ itemId, stock });
+  }
 }

@@ -12,6 +12,7 @@ describe('InventoryService', () => {
     inventoryRepositoryMock = {
       addInventory: jest.fn(),
       findByItemId: jest.fn(),
+      decreaseByItemId: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -28,14 +29,14 @@ describe('InventoryService', () => {
   });
 
   /** 재고 조회 */
-  describe('FindByItemId', () => {
+  describe('FindByItemId - 재고 조회', () => {
     it('Case #1: 아이템이 없는 경우; itemId를 갖는 entity를 찾지 못하면, null을 반환', async () => {
       // given
       const nonExistingItemId = '2';
 
       // when
       const result = await inventoryService.findByItemId(nonExistingItemId);
-      inventoryRepositoryMock.findByItemId.mockResolvedValue(null);
+      inventoryRepositoryMock.findByItemId.mockResolvedValueOnce(null);
 
       // then
       expect(result).toBeNull();
@@ -61,22 +62,72 @@ describe('InventoryService', () => {
   });
 
   /** 재고 감소 */
-  describe('DecreaseByItemId', () => {
-    it('Case #1: 구매 수량이 음수인 경우; quantity가 음수라면, Exception을 throw한다.', async () => {});
+  describe('DecreaseByItemId - 재고 감소', () => {
+    it('Case #1: 구매 수량이 음수인 경우; quantity가 음수라면, Exception을 throw한다.', async () => {
+      // given
+      const itemId: string = '1';
+      const quantity = -1;
 
-    it('Case #2: 아이템이 없는 경우; itemId를 갖는 entity를 찾지 못하면, Exception을 throw한다.', async () => {});
+      // then
+      await expect(
+        inventoryService.decreaseByItemId(itemId, quantity),
+      ).rejects.toThrow('구매 수량은 음수일 수 없습니다.');
+    });
 
-    it('Case #3: 구매 수량이 잔여 수량 보다 클 경우; quantity가 stock보다 크면, Exception을 throw한다.', async () => {});
+    it('Case #2: 아이템이 없는 경우; itemId를 갖는 entity를 찾지 못하면, Exception을 throw한다.', async () => {
+      // given
+      const nonExistingItemId: string = '2';
 
-    it('itemId를 갖는 entity를 찾았다면, stock을 차감하고 inventory를 반화', async () => {});
-  });
+      // when
+      inventoryRepositoryMock.findByItemId.mockResolvedValueOnce(null);
+      const result = await inventoryService.decreaseByItemId(
+        nonExistingItemId,
+        10,
+      );
 
-  /** 재고 수정 */
-  describe('UpdateStock', () => {
-    it('Case #1: 잔여 수량이 음수일 경우; 수정할 stock이 음수라면, Exception을 throw한다.', async () => {});
+      // then
+      expect(result).toBeNull();
+    });
 
-    it('Case #2: 아이템이 없는 경우; itemId를 갖는 entity를 찾지 못하면, Exception을 throw한다.', async () => {});
+    it('Case #3: 구매 수량이 잔여 수량 보다 클 경우; quantity가 stock보다 크면, Exception을 throw한다.', async () => {
+      // given
+      const itemId: string = '1';
+      const quantity = 10;
+      const stock = 5;
 
-    it('Case #3: 구매 완료 후 잔여수량 차감 및 아이템 반환; itemId를 갖는 entity를 찾았다면, stock을 수정하고 inventory를 반환', async () => {});
+      // when
+      inventoryRepositoryMock.findByItemId.mockResolvedValueOnce({
+        itemId,
+        stock,
+      });
+      const result = await inventoryService.decreaseByItemId(itemId, quantity);
+
+      // then
+      expect(result).toBeNull();
+    });
+
+    it('itemId를 갖는 entity를 찾았다면, stock을 차감하고 inventory를 반화', async () => {
+      // given
+      const itemId = '1';
+      const quantity = 5;
+      const stock = 10;
+
+      // when
+      inventoryRepositoryMock.findByItemId.mockResolvedValueOnce({
+        itemId,
+        stock,
+      });
+      inventoryRepositoryMock.decreaseByItemId.mockResolvedValueOnce({
+        itemId,
+        stock: stock - quantity,
+      });
+      const result = await inventoryService.decreaseByItemId(itemId, quantity);
+
+      // then
+      expect(result).not.toBeNull();
+      expect(result).toBeTruthy();
+      expect(inventoryRepositoryMock.findByItemId).toHaveBeenCalledTimes(1);
+      expect(inventoryRepositoryMock.decreaseByItemId).toHaveBeenCalledTimes(1);
+    });
   });
 });
