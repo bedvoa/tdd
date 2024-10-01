@@ -35,8 +35,8 @@ describe('InventoryService', () => {
       const nonExistingItemId = '2';
 
       // when
-      const result = await inventoryService.findByItemId(nonExistingItemId);
       inventoryRepositoryMock.findByItemId.mockResolvedValueOnce(null);
+      const result = await inventoryService.findByItemId(nonExistingItemId);
 
       // then
       expect(result).toBeNull();
