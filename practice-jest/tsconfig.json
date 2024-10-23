@@ -9,5 +9,6 @@
     "forceConsistentCasingInFileNames": true // 파일 이름의 대소문자 일관성 강제
   },
   "include": ["money-problem/*.ts"],
-  "exclude": ["node_modules", "dist"] // 컴파일에서 제외할 디렉토리
+  "exclude": ["node_modules", "dist"], // 컴파일에서 제외할 디렉토리
+  "files": ["global.d.ts"]
 }
